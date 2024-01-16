@@ -58,5 +58,34 @@ def profile():
         </html>
     """)
 
+
+@app.route('/profile2')
+def profile2():
+    user_id = request.args.get('user_id')
+    user_email = get_user_email(user_id)
+    return render_template('profile.html', user_id=user_id, email=user_email)
+
+@app.route('/update_email', methods=['POST'])
+def update_email():
+    user_id = request.form['user_id']
+    new_email = request.form['email']
+    update_user_email(user_id, new_email)
+    return redirect(url_for('profile', user_id=user_id))
+
+def get_user_email(user_id):
+    conn = sqlite3.connect('mydatabase.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT email FROM users WHERE id = ?", (user_id,))
+    email = cursor.fetchone()[0]
+    conn.close()
+    return email
+
+def update_user_email(user_id, new_email):
+    conn = sqlite3.connect('mydatabase.db')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET email = ? WHERE id = ?", (new_email, user_id))
+    conn.commit()
+    conn.close()
+
 if __name__ == '__main__':
     app.run(debug=True)
